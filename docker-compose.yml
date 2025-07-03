@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: weatherdb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    depends_on:
+      - db
+    volumes:
+      - ./wx_data:/app/wx_data
+      - ./yld_data:/app/yld_data
+    environment:
+      DB_URL: "postgresql://user:pass@db:5432/weatherdb"
+    ports:
+      - "5001:5000"
+
+volumes:
+  db_data:

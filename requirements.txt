@@ -1,0 +1,7 @@
+Flask
+Flask-Smorest
+SQLAlchemy
+psycopg2-binary
+marshmallow
+pytest
+alembic
