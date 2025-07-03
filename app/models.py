@@ -1,7 +1,8 @@
 """SQLAlchemy models for weather data application."""
 
 import os
-
+import time
+from sqlalchemy.exc import OperationalError
 from sqlalchemy import (
     Column,
     Date,
@@ -17,7 +18,20 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 # Read DB_URL from env (fallback to localhost)
 DB_URL = os.getenv("DB_URL", "postgresql://user:pass@localhost:5432/weatherdb")
 
-engine = create_engine(DB_URL)
+# Retry connection to handle transient issues (e.g., DB not ready)
+MAX_RETRIES = 10
+RETRY_INTERVAL = 3 # seconds
+for attempt in range(MAX_RETRIES):
+    try:
+        engine = create_engine(DB_URL)
+        conn = engine.connect()
+        conn.close()
+        break  # connection successful
+    except OperationalError as e:
+        print(f"[DB] Attempt {attempt + 1}/{MAX_RETRIES} failed: {e}")
+        time.sleep(RETRY_INTERVAL)
+else:
+    raise RuntimeError("Database not available after several retries.")
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 
