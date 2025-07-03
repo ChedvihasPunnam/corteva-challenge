@@ -1,7 +1,7 @@
 
 # Corteva Coding excercise
 
-This project processes historical **weather and crop yield data**, computes **aggregated statistics**, and serves them via a **RESTful API** with **OpenAPI** documentation.
+This project processes historical **weather data**, computes **aggregated statistics**, and serves them via a **RESTful API** with **OpenAPI** documentation.
 
 ---
 
@@ -24,18 +24,14 @@ This project processes historical **weather and crop yield data**, computes **ag
 corteva-challenge/
 ├── app/
 │   ├── analysis.py            # Weather stats computation
-│   ├── ingestion.py           # Bulk load (weather + yield)
+│   ├── ingestion.py           # Bulk load
 │   ├── models.py              # SQLAlchemy models
 │   ├── schemas.py             # Marshmallow schemas
-│   ├── yield_analysis.py      # Yield stats computation
 │   └── routes/
 │       ├── weather.py
 │       ├── stats.py
-│       ├── yield_records.py
-│       └── yield_stats.py
 ├── tests/                     # Pytest unit tests
 ├── wx_data/                   # Weather input files (by station)
-├── yld_data/                  # Yield input files (by station)
 ├── run.py                     # API entrypoint
 ├── Dockerfile
 ├── docker-compose.yml
@@ -68,15 +64,14 @@ rm -rf code-challenge-template
 #### 3. Start services
 
 ```bash
-docker-compose up --build -d
+docker compose up --build -d 
 ```
 
 #### 4. Ingest and process data
 
 ```bash
-docker-compose exec web python -m app.ingestion
-docker-compose exec web python -m app.analysis
-docker-compose exec web python -m app.yield_analysis
+docker compose exec web python -m app.ingestion
+docker compose exec web python -m app.analysis
 ```
 
 #### 5. Access the API
@@ -93,8 +88,6 @@ All endpoints support pagination and filters like `station_id`, `year`, `date_fr
 | ------ | --------------------- | ------------------------ |
 | GET    | `/api/weather/`       | Raw weather data         |
 | GET    | `/api/weather/stats/` | Aggregated weather stats |
-| GET    | `/api/yield/`         | Raw yield data           |
-| GET    | `/api/yield/stats/`   | Aggregated yield stats   |
 
 ### Example
 

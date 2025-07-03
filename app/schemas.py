@@ -13,13 +13,3 @@ class WeatherStatsSchema(Schema):
     avg_tmax_c      = fields.Float(allow_none=True)
     avg_tmin_c      = fields.Float(allow_none=True)
     total_precip_cm = fields.Float(allow_none=True)
-
-class YieldRecordSchema(Schema):
-    station_id      = fields.Str(required=True)
-    year            = fields.Int(required=True)
-    yield_bu_tenths = fields.Int(required=True)
-
-class YieldStatsSchema(Schema):
-    station_id    = fields.Str(required=True)
-    year          = fields.Int(required=True)
-    avg_yield_bu  = fields.Float(allow_none=True)

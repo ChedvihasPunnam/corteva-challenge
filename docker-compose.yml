@@ -14,7 +14,6 @@ services:
       - db
     volumes:
       - ./wx_data:/app/wx_data
-      - ./yld_data:/app/yld_data
     environment:
       DB_URL: "postgresql://user:pass@db:5432/weatherdb"
     ports:

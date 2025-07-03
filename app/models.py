@@ -54,24 +54,3 @@ class WeatherStats(Base):
     avg_tmax_c      = Column(Float, nullable=True)
     avg_tmin_c      = Column(Float, nullable=True)
     total_precip_cm = Column(Float, nullable=True)
-
-
-class YieldRecord(Base):
-    __tablename__ = "yield_records"
-
-    station_id      = Column(
-        String(20),
-        ForeignKey("stations.station_id", ondelete="CASCADE"),
-        primary_key=True,
-        index=True
-    )
-    year            = Column(Integer, primary_key=True)
-    yield_bu_tenths = Column(Integer, nullable=False)
-
-
-class YieldStats(Base):
-    __tablename__ = "yield_stats"
-
-    station_id   = Column(String(20), primary_key=True)
-    year         = Column(Integer,   primary_key=True)
-    avg_yield_bu = Column(Float,     nullable=True)

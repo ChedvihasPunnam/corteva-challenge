@@ -42,17 +42,3 @@ def test_weather_stats_empty(client):
     assert resp.status_code == 200
     assert resp.is_json
     assert resp.get_json() == []
-
-def test_yield_empty(client):
-    """GET /api/yield/ returns [] on empty DB."""
-    resp = client.get("/api/yield/", follow_redirects=True)
-    assert resp.status_code == 200
-    assert resp.is_json
-    assert resp.get_json() == []
-
-def test_yield_stats_empty(client):
-    """GET /api/yield/stats/ returns [] on empty DB."""
-    resp = client.get("/api/yield/stats/", follow_redirects=True)
-    assert resp.status_code == 200
-    assert resp.is_json
-    assert resp.get_json() == []
