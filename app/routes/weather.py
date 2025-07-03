@@ -1,13 +1,19 @@
-from flask_smorest import Blueprint
+"""API endpoints for accessing daily weather records."""
 from flask import request
+from flask_smorest import Blueprint
+
 from app.models import SessionLocal, WeatherRecord
 from app.schemas import WeatherRecordSchema
 
-blp = Blueprint("weather", __name__, url_prefix="/api/weather", description="Daily weather data")
+blp = Blueprint(
+    "weather", __name__, url_prefix="/api/weather", description="Daily weather data"
+)
+
 
 @blp.route("/")
 @blp.response(200, WeatherRecordSchema(many=True))
 def get_weather():
+    """Return paginated daily weather records, filtered by date or station."""
     session = SessionLocal()
     q = session.query(WeatherRecord)
     if df := request.args.get("date_from"):

@@ -1,13 +1,22 @@
-from flask_smorest import Blueprint
+"""API endpoints for accessing yearly weather statistics."""
 from flask import request
+from flask_smorest import Blueprint
+
 from app.models import SessionLocal, WeatherStats
 from app.schemas import WeatherStatsSchema
 
-blp = Blueprint("stats", __name__, url_prefix="/api/weather/stats", description="Yearly summary data")
+blp = Blueprint(
+    "stats",
+    __name__,
+    url_prefix="/api/weather/stats",
+    description="Yearly summary data",
+)
+
 
 @blp.route("/")
 @blp.response(200, WeatherStatsSchema(many=True))
 def get_stats():
+    """Return paginated yearly weather statistics, filtered by year or station."""
     session = SessionLocal()
     q = session.query(WeatherStats)
     if yr := request.args.get("year", type=int):

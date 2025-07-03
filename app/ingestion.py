@@ -1,31 +1,33 @@
+"""Data ingestion script for weather data."""
+
 import glob
-import os
 import io
-import psycopg2
 import logging
+import os
 from datetime import datetime
 
-from app.models import Base, engine, Station
+import psycopg2
 
-# configure logging
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(message)s",
-    level=logging.INFO
-)
+from app.models import Base, engine
+
+# Configure logging for the ingestion process
+logging.basicConfig(format="%(asctime)s %(levelname)s:%(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 DB_URL = os.getenv("DB_URL", "postgresql://user:pass@db:5432/weatherdb")
 
+
 def ingest_with_copy():
-    # 0) Ensure all tables exist (stations, weather_records)
+    """Bulk-ingest weather data from /app/wx_data/*.txt into the database."""
+    # Ensure all tables exist (stations, weather_records)
     Base.metadata.create_all(bind=engine)
     logger.info("Ensured all tables exist")
 
     conn = psycopg2.connect(DB_URL)
-    cur  = conn.cursor()
+    cur = conn.cursor()
 
-    # ─── WEATHER INGESTION ────────────────────────────────────────────────
-    # 1a) Truncate old weather data
+    # --- WEATHER INGESTION ---
+    # Truncate old weather data
     cur.execute("TRUNCATE TABLE weather_records;")
     logger.info("Truncated weather_records")
 
@@ -33,21 +35,21 @@ def ingest_with_copy():
     for path in glob.glob("/app/wx_data/*.txt"):
         station = os.path.splitext(os.path.basename(path))[0]
 
-        # 1b) Upsert station row
+        # Upsert station row (insert if not exists)
         cur.execute(
             "INSERT INTO stations (station_id, state) VALUES (%s, %s) "
             "ON CONFLICT (station_id) DO NOTHING;",
-            (station, station[:2])
+            (station, station[:2]),
         )
 
-        # 1c) Load weather file
-        with open(path, "r") as f:
+        # Load weather file and prepare data for COPY
+        with open(path) as f:
             lines = f.readlines()
         count = len(lines)
         total_wx += count
 
         data = "".join(f"{station}\t{line}" for line in lines)
-        buf  = io.StringIO(data)
+        buf = io.StringIO(data)
         cur.copy_expert(
             """
             COPY weather_records
@@ -55,11 +57,11 @@ def ingest_with_copy():
             FROM STDIN
             WITH (FORMAT csv, DELIMITER E'\t', HEADER FALSE)
             """,
-            buf
+            buf,
         )
         logger.info(f"[Weather] loaded {count} rows from {os.path.basename(path)}")
 
-    # 1d) Verify weather total
+    # Verify weather total
     cur.execute("SELECT COUNT(*) FROM weather_records;")
     wx_count = cur.fetchone()[0]
     logger.info(f"[Weather] total records: {wx_count} (expected ~{total_wx})")
@@ -68,9 +70,13 @@ def ingest_with_copy():
     cur.close()
     conn.close()
 
+
 if __name__ == "__main__":
     start = datetime.utcnow()
     logger.info(f"Bulk ingestion starting at {start.isoformat()}")
     ingest_with_copy()
     end = datetime.utcnow()
-    logger.info(f"Bulk ingestion finished at {end.isoformat()} — elapsed {(end-start).total_seconds():.2f}s")
+    logger.info(
+        f"Bulk ingestion finished at {end.isoformat()} "
+        f"— elapsed {(end-start).total_seconds():.2f}s"
+    )
